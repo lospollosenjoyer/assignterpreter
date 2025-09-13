@@ -1,4 +1,4 @@
-cabal-version: 2.2
+cabal-version: 1.12
 
 -- This file has been generated from package.yaml by hpack version 0.38.1.
 --
@@ -28,8 +28,6 @@ library
       Lib
   other-modules:
       Paths_assignterpreter
-  autogen-modules:
-      Paths_assignterpreter
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
@@ -40,8 +38,6 @@ library
 executable assignterpreter-exe
   main-is: Main.hs
   other-modules:
-      Paths_assignterpreter
-  autogen-modules:
       Paths_assignterpreter
   hs-source-dirs:
       app
@@ -55,8 +51,6 @@ test-suite assignterpreter-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Paths_assignterpreter
-  autogen-modules:
       Paths_assignterpreter
   hs-source-dirs:
       test
