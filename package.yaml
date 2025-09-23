@@ -22,6 +22,9 @@ description:         Please see the README on GitHub at <https://github.com/losp
 dependencies:
 - base >= 4.7 && < 5
 
+default-extensions:
+  - OverloadedStrings
+
 ghc-options:
 - -Wall
 - -Wcompat
@@ -35,17 +38,12 @@ ghc-options:
 
 library:
   source-dirs: src
-
-executables:
-  assignterpreter-exe:
-    main:                Main.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - assignterpreter
+  dependencies:
+    - array
+    - bytestring
+  build-tools:
+    - alex
+    - happy
 
 tests:
   assignterpreter-test:
