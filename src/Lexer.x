@@ -141,7 +141,7 @@ tokCparen :: AlexAction RangedToken
 tokCparen = tokOp Tcparen
 
 tokenize :: ByteString -> Either String [RangedToken]
-tokenize ln = runAlex ln tokenize'
+tokenize input = runAlex input tokenize'
  where
   tokenize' = do
     gotToken <- alexMonadScan
