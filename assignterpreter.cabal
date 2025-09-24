@@ -25,7 +25,10 @@ source-repository head
 
 library
   exposed-modules:
+      AST
       Lexer
+      Parser
+      Token
   other-modules:
       Paths_assignterpreter
   hs-source-dirs:

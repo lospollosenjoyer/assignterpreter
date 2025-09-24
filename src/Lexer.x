@@ -8,12 +8,15 @@ module Lexer
   , Range (..)
   , RangedToken (..)
   , runAlex
-  , Token (..)
+  , Token(..)
   , tokenize
   ) where
 
 import Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as BS
+import Token
+  ( Token(..)
+  )
 }
 
 %wrapper "monad-bytestring"
@@ -51,20 +54,6 @@ $white+ ;
 <0> @cparen { tokCparen }
 
 {
-data Token
-  = Tvarid ByteString
-  | Tinteger Integer
-  | Tfractional Double
-  | Tplus
-  | Tminus
-  | Ttimes
-  | Tdivide
-  | Tequal
-  | Toparen
-  | Tcparen
-  | Teof
-  deriving (Eq, Show)
-
 data Range = Range
   { start :: AlexPosn
   , stop :: AlexPosn
