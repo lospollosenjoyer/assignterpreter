@@ -12,10 +12,10 @@ module Lexer
   , tokenize
   ) where
 
+import Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as BS
 import Token
-  ( ByteString
-  , Token(..)
+  ( Token(..)
   )
 }
 

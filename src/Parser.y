@@ -6,6 +6,7 @@ module Parser
 import Data.Maybe (fromJust)
 import Data.Monoid (First(..))
 
+import Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Lexer as L
 import AST
   ( Decl(..)
@@ -15,9 +16,9 @@ import AST
   )
 }
 
-%name parse decls
+%name parser decls
 %tokentype { L.RangedToken }
-%error { parseError }
+%error { parserError }
 
 %monad { L.Alex } { >>= } { pure }
 %lexer { lexer } { L.RangedToken L.Teof _ }
@@ -91,11 +92,14 @@ info = fromJust . getFirst . foldMap pure
 (<->) :: L.Range -> L.Range -> L.Range
 L.Range aStart _ <-> L.Range _ bStop = L.Range aStart bStop
 
-parseError :: L.RangedToken -> L.Alex a
-parseError _ = do
+parserError :: L.RangedToken -> L.Alex a
+parserError _ = do
   (L.AlexPn _ ln col, _, _, _) <- L.alexGetInput
   L.alexError $ "syntax error at line " <> show ln <> ", column " <> show col
 
 lexer :: (L.RangedToken -> L.Alex a) -> L.Alex a
 lexer = (=<< L.alexMonadScan)
+
+parse :: ByteString -> Either String [Decl L.Range]
+parse input = L.runAlex input parser
 }

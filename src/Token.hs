@@ -1,6 +1,5 @@
 module Token
-  ( ByteString
-  , Token (..)
+  ( Token (..)
   ) where
 
 import Data.ByteString.Lazy.Char8 (ByteString)
