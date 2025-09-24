@@ -27,7 +27,7 @@ $idchar = [$small $large $digit \_ \']
 
 @varid = $small $idchar*
 @integer = $digit+
-@fractional = $digit+ \. $digit+
+@double = $digit+ \. $digit+
 @oparen = "("
 @cparen = ")"
 @plus = "+"
@@ -35,6 +35,7 @@ $idchar = [$small $large $digit \_ \']
 @times = "*"
 @divide = "/"
 @equal = "="
+@semicolon = ";"
 
 tokens :-
 
@@ -42,15 +43,16 @@ $white+ ;
 
 <0> @varid { tokVarid }
 <0> @integer { tokInteger }
-<0> @fractional { tokFractional }
+<0> @double { tokDouble }
 
+<0> @oparen { tokOparen }
+<0> @cparen { tokCparen }
 <0> @plus { tokPlus }
 <0> @minus { tokMinus }
 <0> @times { tokTimes }
 <0> @divide { tokDivide }
 <0> @equal { tokEqual }
-<0> @oparen { tokOparen }
-<0> @cparen { tokCparen }
+<0> @semicolon { tokSemicolon }
 
 {
 data Range = Range
@@ -91,11 +93,11 @@ tokInteger input@(_, _, str, _) len =
       , rtRange = mkRange input len
       }
 
-tokFractional :: AlexAction RangedToken
-tokFractional input@(_, _, str, _) len =
+tokDouble :: AlexAction RangedToken
+tokDouble input@(_, _, str, _) len =
   pure
     RangedToken
-      { rtToken = Tfractional $ read $ BS.unpack $ BS.take len str
+      { rtToken = Tdouble $ read $ BS.unpack $ BS.take len str
       , rtRange = mkRange input len
       }
 
@@ -127,6 +129,14 @@ tokOparen = tokOp Toparen
 
 tokCparen :: AlexAction RangedToken
 tokCparen = tokOp Tcparen
+
+tokSemicolon :: AlexAction RangedToken
+tokSemicolon input len =
+  pure
+    RangedToken
+      { rtToken = Tsemicolon
+      , rtRange = mkRange input len
+      }
 
 tokenize :: ByteString -> Either String [RangedToken]
 tokenize input = runAlex input tokenize'

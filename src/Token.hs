@@ -8,7 +8,7 @@ import Data.ByteString.Lazy.Char8 (ByteString)
 data Token
   = Tvarid ByteString
   | Tinteger Integer
-  | Tfractional Double
+  | Tdouble Double
   | Tplus
   | Tminus
   | Ttimes
@@ -16,5 +16,6 @@ data Token
   | Tequal
   | Toparen
   | Tcparen
+  | Tsemicolon
   | Teof
   deriving (Eq, Show)
