@@ -27,7 +27,7 @@ import AST
 %token
   VARID       { L.RangedToken (L.Tvarid      _) _ }
   INTEGER     { L.RangedToken (L.Tinteger    _) _ }
-  FRACTIONAL  { L.RangedToken (L.Tfractional _) _ }
+  DOUBLE      { L.RangedToken (L.Tdouble     _) _ }
   '+'         { L.RangedToken L.Tplus           _ }
   '-'         { L.RangedToken L.Tminus          _ }
   '*'         { L.RangedToken L.Ttimes          _ }
@@ -35,6 +35,7 @@ import AST
   '='         { L.RangedToken L.Tequal          _ }
   '('         { L.RangedToken L.Toparen         _ }
   ')'         { L.RangedToken L.Tcparen         _ }
+  ';'         { L.RangedToken L.Tsemicolon      _ }
 
 %left '+' '-'
 %left '*' '/'
@@ -57,8 +58,8 @@ name :: { Name L.Range }
 expr :: { Expr L.Range }
   : INTEGER
                   { termFromToken $1 (\range (L.Tinteger int) -> Einteger range int) }
-  | FRACTIONAL
-                  { termFromToken $1 (\range (L.Tfractional frac) -> Efractional range frac) }
+  | DOUBLE 
+                  { termFromToken $1 (\range (L.Tdouble frac) -> Edouble range frac) }
   | name
                   { Evar (info $1) $1 }
   | '(' expr ')'
@@ -75,8 +76,8 @@ expr :: { Expr L.Range }
                   { Eop (info $1 <-> info $3) $1 (Odivide (L.rtRange $2)) $3 }
 
 decl :: { Decl L.Range }
-  : name '=' expr
-                { Decl (info $1 <-> info $3) $1 $3 }
+  : name '=' expr ';'
+                      { Decl (info $1 <-> info $3) $1 $3 }
 
 decls :: { [Decl L.Range] }
   : many(decl)

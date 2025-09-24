@@ -15,7 +15,7 @@ data Decl a
 
 data Expr a
   = Einteger a Integer
-  | Efractional a Double
+  | Edouble a Double
   | Evar a (Name a)
   | Epar a (Expr a)
   | Eneg a (Expr a)
