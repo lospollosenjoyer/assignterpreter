@@ -30,6 +30,8 @@ library
       Eval
       Lexer
       Parser
+      Range
+      Token
   other-modules:
       Paths_assignterpreter
   hs-source-dirs:
