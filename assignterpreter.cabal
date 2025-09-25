@@ -27,6 +27,7 @@ library
   exposed-modules:
       AST
       Checker
+      Eval
       Lexer
       Parser
   other-modules:
