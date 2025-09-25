@@ -6,6 +6,10 @@ import Control.Monad (foldM)
 import Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as BS
 import qualified Data.HashMap.Strict as HM
+import Range
+  ( AlexPosn (..)
+  , Range (..)
+  )
 
 import AST
   ( Decl (..)
@@ -13,9 +17,9 @@ import AST
   , Name (..)
   , Op (..)
   )
-import qualified Lexer as L
 
 type Vars = HM.HashMap ByteString Number
+type RangedDecl = Decl Range
 
 data Number
   = Ninteger Integer
@@ -52,10 +56,10 @@ instance Fractional Number where
   (/) (Ndouble a) (Ninteger b) = Ndouble $ a / fromIntegral b
   (/) (Ndouble a) (Ndouble b) = Ndouble $ a / b
 
-evalExpr :: Vars -> Expr L.Range -> Either String Number
-evalExpr _ (Einteger _ x) = Right $ Ninteger x -- integer
-evalExpr _ (Edouble _ x) = Right $ Ndouble x -- double
-evalExpr vars (Evar (L.Range (L.AlexPn _ ln col) _) (Name _ name)) =
+evalExpr :: Vars -> Expr Range -> Either String Number
+evalExpr _ (Einteger _ x) = Right $ Ninteger x
+evalExpr _ (Edouble _ x) = Right $ Ndouble x
+evalExpr vars (Evar (Range (AlexPn _ ln col) _) (Name _ name)) =
   maybe
     ( Left $
         "error: undeclared variable "
@@ -67,19 +71,17 @@ evalExpr vars (Evar (L.Range (L.AlexPn _ ln col) _) (Name _ name)) =
     )
     Right
     $ HM.lookup name vars
-evalExpr vars (Epar _ expr) = evalExpr vars expr -- (expr)
+evalExpr vars (Epar _ expr) = evalExpr vars expr
 evalExpr vars (Eneg _ expr) =
-  -- -expr
   negate <$> evalExpr vars expr
 evalExpr vars (Eop _ expr' op expr'') = do
-  -- v' `op` v''
   v' <- evalExpr vars expr'
   v'' <- evalExpr vars expr''
   case op of
     Oplus _ -> Right $ v' + v''
     Ominus _ -> Right $ v' - v''
     Otimes _ -> Right $ v' * v''
-    Odivide (L.Range (L.AlexPn _ ln col) _) -> divide v' v'' ln col
+    Odivide (Range (AlexPn _ ln col) _) -> divide v' v'' ln col
  where
   divide :: Number -> Number -> Int -> Int -> Either String Number
   divide v' v'' ln col
@@ -94,10 +96,10 @@ evalExpr vars (Eop _ expr' op expr'') = do
   isZero (Ndouble 0) = True
   isZero _ = False
 
-evalDecl :: Vars -> Decl L.Range -> Either String Vars
+evalDecl :: Vars -> RangedDecl -> Either String Vars
 evalDecl vars (Decl _ (Name _ name) expr) = do
   evaluatedExpr <- evalExpr vars expr
   return $ HM.insert name evaluatedExpr vars
 
-eval :: [Decl L.Range] -> Either String Vars
+eval :: [RangedDecl] -> Either String Vars
 eval = foldM evalDecl HM.empty
