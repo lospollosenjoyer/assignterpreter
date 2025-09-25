@@ -9,7 +9,7 @@ module Lexer
   , RangedToken (..)
   , runAlex
   , Token (..)
-  , tokenize
+  , tokenize'
   ) where
 
 import Data.ByteString.Lazy.Char8 (ByteString)
@@ -151,12 +151,13 @@ tokSemicolon input len =
       , rtRange = mkRange input len
       }
 
-tokenize :: ByteString -> Either String [RangedToken]
-tokenize input = runAlex input tokenize'
- where
-  tokenize' = do
+tokenize :: Alex [RangedToken]
+tokenize = do
     gotToken <- alexMonadScan
     if rtToken gotToken == Teof
       then pure [gotToken]
-      else (gotToken :) <$> tokenize'
+      else (gotToken :) <$> tokenize
+
+tokenize' :: ByteString -> Either String [RangedToken]
+tokenize' input = runAlex input tokenize
 }
