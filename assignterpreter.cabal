@@ -26,6 +26,8 @@ source-repository head
 library
   exposed-modules:
       Lexer
+      Range
+      Token
   other-modules:
       Paths_assignterpreter
   hs-source-dirs:
