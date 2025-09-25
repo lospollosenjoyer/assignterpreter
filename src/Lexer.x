@@ -9,7 +9,7 @@ module Lexer
   , RangedToken (..)
   , runAlex
   , Token (..)
-  , tokenize'
+  , tokenize
   ) where
 
 import Data.ByteString.Lazy.Char8 (ByteString)
@@ -114,42 +114,37 @@ tokDouble input@(_, _, str, _) len =
       , rtRange = mkRange input len
       }
 
-tokOp :: Token -> AlexAction RangedToken
-tokOp ctor input len =
+tokSym :: Token -> AlexAction RangedToken
+tokSym ctor input _ =
   pure
     RangedToken
       { rtToken = ctor
-      , rtRange = mkRange input len
+      , rtRange = mkRange input 1
       }
 
 tokPlus :: AlexAction RangedToken
-tokPlus = tokOp Tplus
+tokPlus = tokSym Tplus
 
 tokMinus :: AlexAction RangedToken
-tokMinus = tokOp Tminus
+tokMinus = tokSym Tminus
 
 tokTimes :: AlexAction RangedToken
-tokTimes = tokOp Ttimes
+tokTimes = tokSym Ttimes
 
 tokDivide :: AlexAction RangedToken
-tokDivide = tokOp Tdivide
+tokDivide = tokSym Tdivide
 
 tokEqual :: AlexAction RangedToken
-tokEqual = tokOp Tequal
+tokEqual = tokSym Tequal
 
 tokOparen :: AlexAction RangedToken
-tokOparen = tokOp Toparen
+tokOparen = tokSym Toparen
 
 tokCparen :: AlexAction RangedToken
-tokCparen = tokOp Tcparen
+tokCparen = tokSym Tcparen
 
 tokSemicolon :: AlexAction RangedToken
-tokSemicolon input len =
-  pure
-    RangedToken
-      { rtToken = Tsemicolon
-      , rtRange = mkRange input len
-      }
+tokSemicolon = tokSym Tsemicolon
 
 tokenize :: Alex [RangedToken]
 tokenize = do
@@ -157,7 +152,4 @@ tokenize = do
     if rtToken gotToken == Teof
       then pure [gotToken]
       else (gotToken :) <$> tokenize
-
-tokenize' :: ByteString -> Either String [RangedToken]
-tokenize' input = runAlex input tokenize
 }
