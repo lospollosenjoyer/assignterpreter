@@ -1,24 +1,24 @@
 {
 module Parser
-  ( parse
+  ( parse'
   ) where
 
 import Data.Maybe (fromJust)
-import Data.Monoid (First(..))
+import Data.Monoid (First (..))
 
 import Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Lexer as L
 import AST
-  ( Decl(..)
-  , Expr(..)
-  , Name(..)
-  , Op(..)
+  ( Decl (..)
+  , Expr (..)
+  , Name (..)
+  , Op (..)
   )
 }
 
-%name parser decls
+%name parse decls
 %tokentype { L.RangedToken }
-%error { parserError }
+%error { parseError }
 
 %monad { L.Alex } { >>= } { pure }
 %lexer { lexer } { L.RangedToken L.Teof _ }
@@ -93,14 +93,14 @@ info = fromJust . getFirst . foldMap pure
 (<->) :: L.Range -> L.Range -> L.Range
 L.Range aStart _ <-> L.Range _ bStop = L.Range aStart bStop
 
-parserError :: L.RangedToken -> L.Alex a
-parserError _ = do
+parseError :: L.RangedToken -> L.Alex a
+parseError _ = do
   (L.AlexPn _ ln col, _, _, _) <- L.alexGetInput
   L.alexError $ "syntax error at line " <> show ln <> ", column " <> show col
 
 lexer :: (L.RangedToken -> L.Alex a) -> L.Alex a
 lexer = (=<< L.alexMonadScan)
 
-parse :: ByteString -> Either String [Decl L.Range]
-parse input = L.runAlex input parser
+parse' :: ByteString -> Either String [Decl L.Range]
+parse' input = L.runAlex input parse
 }
