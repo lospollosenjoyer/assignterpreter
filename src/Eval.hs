@@ -1,5 +1,6 @@
 module Eval
   ( eval
+  , Vars
   ) where
 
 import Control.Monad (foldM)

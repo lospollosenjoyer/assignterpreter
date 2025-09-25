@@ -28,6 +28,7 @@ library
       AST
       Checker
       Eval
+      Interpreter
       Lexer
       Parser
       Range
