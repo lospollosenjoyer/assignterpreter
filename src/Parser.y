@@ -1,6 +1,6 @@
 {
 module Parser
-  ( parse'
+  ( parse
   ) where
 
 import Data.Maybe (fromJust)
@@ -8,6 +8,16 @@ import Data.Monoid (First (..))
 
 import Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Lexer as L
+import Range
+  ( AlexPosn (..)
+  , Range (..)
+  )
+
+import Token
+  ( RangedToken (..)
+  , Token (..)
+  )
+
 import AST
   ( Decl (..)
   , Expr (..)
@@ -17,25 +27,25 @@ import AST
 }
 
 %name parse decls
-%tokentype { L.RangedToken }
+%tokentype { RangedToken }
 %error { parseError }
 
 %monad { L.Alex } { >>= } { pure }
-%lexer { lexer } { L.RangedToken L.Teof _ }
+%lexer { lexer } { RangedToken Teof _ }
 %expect 0
 
 %token
-  VARID       { L.RangedToken (L.Tvarid      _) _ }
-  INTEGER     { L.RangedToken (L.Tinteger    _) _ }
-  DOUBLE      { L.RangedToken (L.Tdouble     _) _ }
-  '+'         { L.RangedToken L.Tplus           _ }
-  '-'         { L.RangedToken L.Tminus          _ }
-  '*'         { L.RangedToken L.Ttimes          _ }
-  '/'         { L.RangedToken L.Tdivide         _ }
-  '='         { L.RangedToken L.Tequal          _ }
-  '('         { L.RangedToken L.Toparen         _ }
-  ')'         { L.RangedToken L.Tcparen         _ }
-  ';'         { L.RangedToken L.Tsemicolon      _ }
+  VARID       { RangedToken (Tvarid      _) _ }
+  INTEGER     { RangedToken (Tinteger    _) _ }
+  DOUBLE      { RangedToken (Tdouble     _) _ }
+  '+'         { RangedToken Tplus           _ }
+  '-'         { RangedToken Tminus          _ }
+  '*'         { RangedToken Ttimes          _ }
+  '/'         { RangedToken Tdivide         _ }
+  '='         { RangedToken Tequal          _ }
+  '('         { RangedToken Toparen         _ }
+  ')'         { RangedToken Tcparen         _ }
+  ';'         { RangedToken Tsemicolon      _ }
 
 %left '+' '-'
 %left '*' '/'
@@ -51,56 +61,53 @@ many(p)
   : many_reversed(p)
                         { reverse $1 }
 
-name :: { Name L.Range }
+name :: { Name Range }
   : VARID
-                { termFromToken $1 (\range (L.Tvarid name) -> Name range name) }
+                { termFromToken $1 (\ range (Tvarid name) -> Name range name) }
 
-expr :: { Expr L.Range }
+expr :: { Expr Range }
   : INTEGER
-                  { termFromToken $1 (\range (L.Tinteger int) -> Einteger range int) }
+                  { termFromToken $1 (\ range (Tinteger int) -> Einteger range int) }
   | DOUBLE 
-                  { termFromToken $1 (\range (L.Tdouble frac) -> Edouble range frac) }
+                  { termFromToken $1 (\ range (Tdouble frac) -> Edouble range frac) }
   | name
                   { Evar (info $1) $1 }
   | '(' expr ')'
-                  { Epar (L.rtRange $1 <-> L.rtRange $3) $2 }
+                  { Epar (rtRange $1 <-> rtRange $3) $2 }
   | '-' expr
-                  { Eneg (L.rtRange $1 <-> info $2) $2 }
+                  { Eneg (rtRange $1 <-> info $2) $2 }
   | expr '+' expr
-                  { Eop (info $1 <-> info $3) $1 (Oplus (L.rtRange $2)) $3 }
+                  { Eop (info $1 <-> info $3) $1 (Oplus (rtRange $2)) $3 }
   | expr '-' expr
-                  { Eop (info $1 <-> info $3) $1 (Ominus (L.rtRange $2)) $3 }
+                  { Eop (info $1 <-> info $3) $1 (Ominus (rtRange $2)) $3 }
   | expr '*' expr
-                  { Eop (info $1 <-> info $3) $1 (Otimes (L.rtRange $2)) $3 }
+                  { Eop (info $1 <-> info $3) $1 (Otimes (rtRange $2)) $3 }
   | expr '/' expr
-                  { Eop (info $1 <-> info $3) $1 (Odivide (L.rtRange $2)) $3 }
+                  { Eop (info $1 <-> info $3) $1 (Odivide (rtRange $2)) $3 }
 
-decl :: { Decl L.Range }
+decl :: { Decl Range }
   : name '=' expr ';'
                       { Decl (info $1 <-> info $3) $1 $3 }
 
-decls :: { [Decl L.Range] }
+decls :: { [Decl Range] }
   : many(decl)
                 { $1 }
 
 {
-termFromToken :: L.RangedToken -> (L.Range -> L.Token -> a) -> a
-termFromToken (L.RangedToken token range) ctor = ctor range token
+termFromToken :: RangedToken -> (Range -> Token -> a) -> a
+termFromToken (RangedToken token range) ctor = ctor range token
 
-info :: Foldable f => f a -> a
+info :: (Foldable f) => f a -> a
 info = fromJust . getFirst . foldMap pure
 
-(<->) :: L.Range -> L.Range -> L.Range
-L.Range aStart _ <-> L.Range _ bStop = L.Range aStart bStop
+(<->) :: Range -> Range -> Range
+Range aStart _ <-> Range _ bStop = Range aStart bStop
 
-parseError :: L.RangedToken -> L.Alex a
+parseError :: RangedToken -> L.Alex a
 parseError _ = do
-  (L.AlexPn _ ln col, _, _, _) <- L.alexGetInput
+  (AlexPn _ ln col, _, _, _) <- L.alexGetInput
   L.alexError $ "syntax error at line " <> show ln <> ", column " <> show col
 
-lexer :: (L.RangedToken -> L.Alex a) -> L.Alex a
+lexer :: (RangedToken -> L.Alex a) -> L.Alex a
 lexer = (=<< L.alexMonadScan)
-
-parse' :: ByteString -> Either String [Decl L.Range]
-parse' input = L.runAlex input parse
 }
