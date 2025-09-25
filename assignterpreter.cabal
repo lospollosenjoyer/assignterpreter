@@ -29,7 +29,6 @@ library
       Checker
       Lexer
       Parser
-      Token
   other-modules:
       Paths_assignterpreter
   hs-source-dirs:
