@@ -17,5 +17,4 @@ import Parser
 interpret :: ByteString -> Either String Vars
 interpret input = do
   ast <- runAlex input parse
-  vars <- eval ast
-  return vars
+  eval ast
