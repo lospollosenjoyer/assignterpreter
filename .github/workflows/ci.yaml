@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  fourmolu:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repo checkout
+        uses: actions/checkout@v4
+      - uses: haskell-actions/run-fourmolu@v9
+        with:
+          version: "latest"
+    continue-on-error: false
+
+  hlint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repo checkout
+        uses: actions/checkout@v4
+
+      - name: "HLint setup"
+        uses: haskell-actions/hlint-setup@v2
+
+      - name: "HLint run"
+        uses: haskell-actions/hlint-run@v2
+        with:
+          path: |
+            src/
+            test/
+          fail-on: warning
+
+  build-and-test:
+    needs: |
+      fourmolu
+      hlint
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Repo checkout
+        uses: actions/checkout@v4
+
+      - name: Haskell & Stack setup
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: "9.8.4"
+          enable-stack: true
+          stack-version: "latest"
+      - name: Dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.stack
+            .stack-work
+          key: ${{ runner.os }}-stack-${{ hashFiles('stack.yaml.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-stack-
+
+      - name: Dependencies install
+        run: stack build --only-dependencies
+
+      - name: Build & test
+        run: stack build --test
