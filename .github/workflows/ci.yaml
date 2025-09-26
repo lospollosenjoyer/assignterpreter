@@ -35,9 +35,7 @@ jobs:
           fail-on: warning
 
   build-and-test:
-    needs: |
-      fourmolu
-      hlint
+    needs: [fourmolu, hlint]
     runs-on: ubuntu-latest
     
     steps:
