@@ -1,4 +1,4 @@
-module Intepreter
+module InterpreterSpec
   ( spec
   ) where
 

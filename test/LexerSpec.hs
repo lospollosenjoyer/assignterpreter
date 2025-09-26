@@ -123,6 +123,12 @@ spec = do
     it "allows leading zeros here too" $ do
       tokensWithoutEOF "000707.562" `shouldBe` Right [Tdouble 707.562]
 
+    it "prohibits .<float_sequence> notation" $ do
+      tokensWithoutEOF ".14" `shouldBe` defaultLexerError
+
+    it "prohibits <float_sequence> notation" $ do
+      tokensWithoutEOF "0." `shouldBe` lexerError 1 2
+
     it "can tokenize some more complex mathematical stuff" $ do
       tokensWithoutEOF "((5.0 - 4.0) * sin(x) * sin(x) + cos(x) * cos(x) = 1.0)"
         `shouldBe` Right
