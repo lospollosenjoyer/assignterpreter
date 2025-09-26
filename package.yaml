@@ -56,3 +56,5 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - assignterpreter
+    - bytestring
+    - hspec
