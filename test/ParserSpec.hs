@@ -1,5 +1,6 @@
 module ParserSpec
-  ( spec
+  ( rangedDeclsFromInput
+  , spec
   ) where
 
 import qualified AST
@@ -22,7 +23,7 @@ data Expr
   | Eop Expr Op Expr
   deriving (Eq, Show)
 
-data Name
+newtype Name
   = Name ByteString
   deriving (Eq, Show)
 
@@ -116,7 +117,7 @@ spec = do
 
     it "can parse multiple declarations" $ do
       namesFromDeclsFromInput "a = 5; b = a - 3; c = x * (a + b);"
-        `shouldBe` (Right [Name "a", Name "b", Name "c"])
+        `shouldBe` Right [Name "a", Name "b", Name "c"]
 
     it "prohibits declarations not starting with name" $ do
       declsFromInput "1 + 2 = a;" `shouldBe` defaultSyntaxError
@@ -142,14 +143,16 @@ spec = do
 
     it "can parse some complex expressions" $ do
       exprFromDeclFromInput "len = (2 - y * 0) * pi * r;"
-        `shouldBe` Right (Eop
-                         ( Eop
-                             (Epar (Eop (Einteger 2) Ominus (Eop (Evar $ Name "y") Otimes (Einteger 0))))
-                             Otimes
-                             (Evar $ Name "pi")
-                         )
-                         Otimes
-                         (Evar $ Name "r"))
+        `shouldBe` Right
+          ( Eop
+              ( Eop
+                  (Epar (Eop (Einteger 2) Ominus (Eop (Evar $ Name "y") Otimes (Einteger 0))))
+                  Otimes
+                  (Evar $ Name "pi")
+              )
+              Otimes
+              (Evar $ Name "r")
+          )
 
   describe "operators" $ do
     it "allows <expr> + <expr>" $ do
@@ -185,3 +188,6 @@ spec = do
 
     it "allows only correct parentheses' sequences" $ do
       declsFromInput "x = (y + z) - a);" `shouldBe` syntaxError 1 16
+
+    it "does not consider <empty space>; as empty declaration" $ do
+      declsFromInput "    ;  ;\n;" `shouldBe` syntaxError 1 5
