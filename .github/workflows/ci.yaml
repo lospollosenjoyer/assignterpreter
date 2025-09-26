@@ -29,9 +29,9 @@ jobs:
       - name: "HLint run"
         uses: haskell-actions/hlint-run@v2
         with:
-          paths:
-            - src/
-            - test/
+          path: |
+            src/
+            test/
           fail-on: warning
 
   build-and-test:
