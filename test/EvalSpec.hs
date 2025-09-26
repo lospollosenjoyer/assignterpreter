@@ -7,7 +7,7 @@ import Data.ByteString.Lazy.Char8
   ( ByteString
   , unpack
   )
-import qualified Data.HashMap.Strict as HM
+import Data.HashMap.Strict (fromList)
 import Eval
   ( Number (..)
   , Vars
@@ -44,24 +44,26 @@ spec = do
   describe "integer arithmetic" $ do
     it "can do just addition and subtraction" $ do
       vars "a = 3 + (5 - 4 * 8); b = 20 * (1 - 3); a = a + 2 * b;"
-        `shouldBe` Right (HM.fromList [("a", Ninteger (-104)), ("b", Ninteger (-40))])
+        `shouldBe` Right (fromList [("a", Ninteger (-104)), ("b", Ninteger (-40))])
 
     it "can also do multiplication" $ do
       vars "a = 3 * (5 - 6); a = (a + 7) * (a - 10);"
-        `shouldBe` Right (HM.fromList [("a", Ninteger (-52))])
+        `shouldBe` Right (fromList [("a", Ninteger (-52))])
 
   describe "float arithmetic" $ do
     it "can do addition, subtraction, multiplication and division" $ do
       vars "a = 3.5 - 4.17 * 0.99; b = a / 1.25; a = (b + a) / 6;"
-        `shouldBe` Right (HM.fromList
-                         [("a", Ndouble (-0.18849000000000007)), ("b", Ndouble (-0.5026400000000002))])
+        `shouldBe` Right
+          ( fromList
+              [("a", Ndouble (-0.18849000000000007)), ("b", Ndouble (-0.5026400000000002))]
+          )
 
     it "prohibits division by zero" $ do
       vars "a = 3.5 + 7; a = a / (a - a);" `shouldBe` divideError 1 20
 
     it "integer division leads to float" $ do
       vars "a = 6 / 2; b = a / 1;"
-        `shouldBe` Right (HM.fromList [("a", Ndouble 3.0), ("b", Ndouble 3.0)])
+        `shouldBe` Right (fromList [("a", Ndouble 3.0), ("b", Ndouble 3.0)])
 
   describe "error-handling" $ do
     it "prohibits use of undeclared variables" $ do

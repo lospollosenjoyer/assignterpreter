@@ -23,7 +23,7 @@ data Expr
   | Eop Expr Op Expr
   deriving (Eq, Show)
 
-data Name
+newtype Name
   = Name ByteString
   deriving (Eq, Show)
 
