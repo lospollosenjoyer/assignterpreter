@@ -53,6 +53,8 @@ test-suite assignterpreter-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      EvalSpec
+      InterpreterSpec
       LexerSpec
       ParserSpec
       Paths_assignterpreter
@@ -66,4 +68,5 @@ test-suite assignterpreter-test
     , base >=4.7 && <5
     , bytestring
     , hspec
+    , unordered-containers
   default-language: Haskell2010

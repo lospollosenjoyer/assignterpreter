@@ -1,11 +1,14 @@
 module Eval
   ( eval
+  , Number (..)
   , Vars
   ) where
 
 import Control.Monad (foldM)
-import Data.ByteString.Lazy.Char8 (ByteString)
-import qualified Data.ByteString.Lazy.Char8 as BS
+import Data.ByteString.Lazy.Char8
+  ( ByteString
+  , unpack
+  )
 import qualified Data.HashMap.Strict as HM
 import Range
   ( AlexPosn (..)
@@ -26,6 +29,12 @@ data Number
   = Ninteger Integer
   | Ndouble Double
   deriving (Show)
+
+instance Eq Number where
+  (==) (Ninteger a) (Ninteger b) = a == b
+  (==) (Ndouble a) (Ndouble b) = a == b
+  (==) (Ninteger a) (Ndouble b) = fromIntegral a == b
+  (==) (Ndouble a) (Ninteger b) = a == fromIntegral b
 
 instance Num Number where
   (+) (Ninteger a) (Ninteger b) = Ninteger $ a + b
@@ -64,7 +73,7 @@ evalExpr vars (Evar (Range (AlexPn _ ln col) _) (Name _ name)) =
   maybe
     ( Left $
         "error: undeclared variable "
-          ++ BS.unpack name
+          ++ unpack name
           ++ " at line "
           ++ show ln
           ++ ", column "
