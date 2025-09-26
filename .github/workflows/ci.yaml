@@ -30,8 +30,8 @@ jobs:
         uses: haskell-actions/hlint-run@v2
         with:
           paths:
-            - 'src/'
-            - 'test/'
+            - src/
+            - test/
           fail-on: warning
 
   build-and-test:
