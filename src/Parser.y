@@ -106,7 +106,7 @@ Range aStart _ <-> Range _ bStop = Range aStart bStop
 parseError :: RangedToken -> L.Alex a
 parseError _ = do
   (AlexPn _ ln col, _, _, _) <- L.alexGetInput
-  L.alexError $ "syntax error at line " <> show ln <> ", column " <> show col
+  L.alexError $ "syntax error at line " <> show ln <> ", column " <> show (col - 1)
 
 lexer :: (RangedToken -> L.Alex a) -> L.Alex a
 lexer = (=<< L.alexMonadScan)

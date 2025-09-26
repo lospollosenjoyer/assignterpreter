@@ -53,8 +53,6 @@ test-suite assignterpreter-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      EvalSpec
-      InterpreterSpec
       LexerSpec
       ParserSpec
       Paths_assignterpreter
